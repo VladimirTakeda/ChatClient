@@ -37,6 +37,12 @@ void ChatWidget::on_lineEdit_2_returnPressed()
 
 void ChatWidget::LookingForPeople(const QString& prefix)
 {
+    if (!prefix.isEmpty() && ui->stackedWidget->currentIndex() == 0)
+        ui->stackedWidget->setCurrentIndex(1);
+
+    if (prefix.isEmpty() && ui->stackedWidget->currentIndex() == 1)
+        ui->stackedWidget->setCurrentIndex(0);
+
     QNetworkRequest request;
 
     QJsonObject obj;
