@@ -8,15 +8,26 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
-class MainWindow : public QMainWindow
+class ChatWidget;
+class UnregisterWidget;
+class RegistrationWidget;
+class QStackedLayout;
+
+class MainWindow : public QMainWindow, std::enable_shared_from_this<MainWindow>
 {
     Q_OBJECT
 
 public:
     MainWindow(QWidget *parent = nullptr);
+    void SetCentralWidet();
+    void SetRegistrationWidget();
+    void SetChatWidget();
     ~MainWindow();
 
 private:
-    std::unique_ptr<Ui::MainWindow> ui;
+    ChatWidget* m_chatWidget;
+    UnregisterWidget* m_unregisterWidget;
+    RegistrationWidget* m_registrationWidget;
+    QStackedLayout* m_layout;
 };
 #endif // MAINWINDOW_H
