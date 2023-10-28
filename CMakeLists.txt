@@ -30,9 +30,10 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         chat.h chat.cpp
         unregister.ui
         unregister.h unregister.cpp
-        websocketclient.h websocketclient.cpp
         registration.h registration.cpp
         registration.ui
+        network/websocketclient.cpp network/websocketclient.h
+        network/httpclient.h network/httpclient.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET ChatClient APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
