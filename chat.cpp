@@ -59,7 +59,12 @@ ChatWidget::~ChatWidget()
 void ChatWidget::SetUpWSConnection(){
 
     QString url = QString("ws://localhost:8080/create?user_id=%1").arg(getCurrUserId());
-    m_client.reset(new WebSocketClient(QUrl(url)));
+    m_client.reset(new WebSocketClient(QUrl(url), std::bind(&ChatWidget::GetNewMessage, this, std::placeholders::_1)));
+}
+
+void ChatWidget::GetNewMessage(Message mgs)
+{
+    qDebug() << mgs.text;
 }
 
 void ChatWidget::on_lineEdit_2_returnPressed()

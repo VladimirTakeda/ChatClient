@@ -1,8 +1,12 @@
 #include "websocketclient.h"
 
-WebSocketClient::WebSocketClient(const QUrl &url, QObject* parent):
+#include <QJsonDocument>
+#include <QJsonObject>
+
+WebSocketClient::WebSocketClient(const QUrl &url, std::function<void(Message)> callBack, QObject* parent):
     QObject(parent),
-    m_socket()
+    m_socket(),
+    m_callBack(callBack)
 {
     connect(&m_socket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::errorOccurred),
             [=](QAbstractSocket::SocketError error){
@@ -36,6 +40,13 @@ void WebSocketClient::OnCloseConnection(){
 }
 
 void WebSocketClient::OnTextMessageRecieved(QString message){
+    QJsonDocument itemDoc = QJsonDocument::fromJson(message.toUtf8());
+    QJsonObject rootObject = itemDoc.object();
+    Message msg;
+    msg.text = rootObject.value("content").toString();
+    msg.userFrom = rootObject.value("user_from_id").toInt();
+    msg.userTo = rootObject.value("user_to_id").toInt();
+    m_callBack(msg);
 }
 
 void WebSocketClient::handle_ssl_errors(const QList<QSslError> &errors){
