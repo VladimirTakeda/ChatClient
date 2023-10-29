@@ -1,5 +1,7 @@
 #include "chat.h"
 
+#include "user_item.h"
+
 #include "network/websocketclient.h"
 #include "network/httpclient.h"
 
@@ -62,13 +64,14 @@ void ChatWidget::SetUpWSConnection(){
 
 void ChatWidget::on_lineEdit_2_returnPressed()
 {
+    qDebug() << "here";
     QJsonObject obj;
     obj["content"] = ui->lineEdit_2->text();
     obj["user_from_id"] = getCurrUserId();
     obj["user_to_id"] = m_CurrDialogUserId;
     QJsonDocument doc(obj);
 
-    m_client->SendTextMessage(doc.toJson());
+    m_client->SendTextMessage(doc.toJson(QJsonDocument::Compact));
 
     QString formattedMessage = "<span style='background-color: #3498db; color: #fff;'>" + ui->lineEdit_2->text() + "</span>";
     ui->textBrowser->append(formattedMessage);
@@ -118,10 +121,14 @@ void ChatWidget::SetSearchResults(const std::vector<UserInfo>& results)
 {
     ui->listWidget_2->clear();
     for (const UserInfo& userInfo : results){
-        QListWidgetItem *newItem = new QListWidgetItem;
-        newItem->setData(Qt::UserRole, userInfo.userId);
-        newItem->setText(userInfo.userLogin);
-        ui->listWidget_2->addItem(newItem);
+        QListWidgetItem *contactItem = new QListWidgetItem(ui->listWidget_2);
+        auto user = new UserItemWidget();
+        user->SetName(userInfo.userLogin);
+        user->SetLastText("");
+        contactItem->setData(Qt::UserRole, userInfo.userId);
+        contactItem->setSizeHint(user->sizeHint());
+        ui->listWidget_2->addItem(contactItem);
+        ui->listWidget_2->setItemWidget(contactItem, user);
     }
 }
 

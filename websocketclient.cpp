@@ -21,13 +21,13 @@ WebSocketClient::WebSocketClient(const QUrl &url, QObject* parent):
 }
 
 void WebSocketClient::SendTextMessage(const QString& msg){
-    qDebug() << msg;
-    qDebug() << "Sended bytes : " << m_socket.sendTextMessage(msg);
+    m_socket.sendTextMessage(msg);
 }
 
 void WebSocketClient::OnNewConnection(){
     qDebug() << "New Connection";
 
+    m_socket.sendTextMessage(QStringLiteral("Hello, world!"));
     connect(&m_socket, &QWebSocket::textMessageReceived, this, &WebSocketClient::OnTextMessageRecieved);
 }
 
