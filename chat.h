@@ -21,6 +21,7 @@ class QNetworkAccessManager;
 class QNetworkReply;
 class QListWidgetItem;
 class HttpClient;
+class Message;
 
 class ChatWidget : public QWidget
 {
@@ -33,6 +34,7 @@ public:
 private:
     void SetSearchResults(const std::vector<UserInfo>& results);
     void SendCreateDialogReq(int fromUser, int toUser);
+    void GetNewMessage(Message mgs);
 
 private slots:
     void on_lineEdit_2_returnPressed();
