@@ -1,6 +1,7 @@
 #include "chat.h"
 
 #include "user_item.h"
+#include "dialogsmanager.h"
 
 #include "network/websocketclient.h"
 #include "network/httpclient.h"
@@ -46,6 +47,7 @@ ChatWidget::ChatWidget(std::shared_ptr<HttpClient> httpClient, QWidget *parent)
     , ui(new Ui::ChatUI)
     , m_networkMgr(new QNetworkAccessManager(this))
     , m_httpClient(std::move(httpClient))
+    , m_dialogsManager(new DialogsManager())
 {
     ui->setupUi(this);
     connect(ui->lineEdit, &QLineEdit::textEdited, this, &ChatWidget::LookingForPeople);
@@ -59,12 +61,19 @@ ChatWidget::~ChatWidget()
 void ChatWidget::SetUpWSConnection(){
 
     QString url = QString("ws://localhost:8080/create?user_id=%1").arg(getCurrUserId());
-    m_client.reset(new WebSocketClient(QUrl(url), std::bind(&ChatWidget::GetNewMessage, this, std::placeholders::_1)));
+    m_client.reset(new WebSocket::WebSocketClient(QUrl(url), std::bind(&ChatWidget::GetNewMessage, this, std::placeholders::_1)));
 }
 
-void ChatWidget::GetNewMessage(Message mgs)
+void ChatWidget::GetNewMessage(WebSocket::Message mgs)
 {
-    qDebug() << mgs.text;
+    m_dialogsManager->AddMessage(mgs.userFrom, {mgs.text, false});
+    UpdateTextBrowser();
+}
+
+void ChatWidget::UpdateTextBrowser()
+{
+    ui->textBrowser->clear();
+    ui->textBrowser->setHtml(m_dialogsManager->GetDialog(m_CurrDialogUserId).GetHtmlDialog());
 }
 
 void ChatWidget::on_lineEdit_2_returnPressed()
@@ -74,12 +83,15 @@ void ChatWidget::on_lineEdit_2_returnPressed()
     obj["content"] = ui->lineEdit_2->text();
     obj["user_from_id"] = getCurrUserId();
     obj["user_to_id"] = m_CurrDialogUserId;
+
+    m_dialogsManager->AddMessage(m_CurrDialogUserId, {ui->lineEdit_2->text(), true});
+    UpdateTextBrowser();
+
     QJsonDocument doc(obj);
 
     m_client->SendTextMessage(doc.toJson(QJsonDocument::Compact));
 
-    QString formattedMessage = "<span style='background-color: #3498db; color: #fff;'>" + ui->lineEdit_2->text() + "</span>";
-    ui->textBrowser->append(formattedMessage);
+    //QString formattedMessage = "<span style='background-color: #3498db; color: #fff;'>" + ui->lineEdit_2->text() + "</span>";
     ui->lineEdit_2->clear();
 }
 
@@ -141,6 +153,8 @@ void ChatWidget::SetDialog(QListWidgetItem * clickedItem)
 {
     ui->stackedWidget_2->setCurrentIndex(1);
     ui->label_4->setText(clickedItem->text());
+    m_CurrDialogUserId = clickedItem->data(Qt::UserRole).toInt();
+    UpdateTextBrowser();
     if (ui->textBrowser->toPlainText().isEmpty()){
         SendCreateDialogReq(getCurrUserId(), clickedItem->data(Qt::UserRole).toInt());
     }
@@ -166,7 +180,6 @@ void ChatWidget::SendCreateDialogReq(int fromUser, int toUser){
 
     m_httpClient->sendHttpRequest(std::move(request), std::move(data), std::bind(&ChatWidget::CreateChatReply, this, std::placeholders::_1));
     lastUserId = toUser;
-    m_CurrDialogUserId = toUser;
 }
 
 void ChatWidget::CreateChatReply(QNetworkReply *reply){

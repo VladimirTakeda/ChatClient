@@ -2,13 +2,13 @@
 #define WEBSOCKETCLIENT_H
 
 
-//Qt includes
-//WebSocket
 #include <QtWebSockets/QWebSocketServer>
 #include <QtWebSockets/QWebSocket>
-//Util
+
 #include <QObject>
 #include <QDebug>
+
+namespace WebSocket{
 
 struct Message{
     QString text;
@@ -28,5 +28,7 @@ private slots:
     QWebSocket m_socket;
     std::function<void(Message)> m_callBack;
 };
+
+}
 
 #endif // WEBSOCKETCLIENT_H

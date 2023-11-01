@@ -3,6 +3,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
+namespace WebSocket{
+
 WebSocketClient::WebSocketClient(const QUrl &url, std::function<void(Message)> callBack, QObject* parent):
     QObject(parent),
     m_socket(),
@@ -53,4 +55,5 @@ void WebSocketClient::handle_ssl_errors(const QList<QSslError> &errors){
     Q_UNUSED(errors);
     qDebug() << "SSL";
     m_socket.ignoreSslErrors();
+}
 }
