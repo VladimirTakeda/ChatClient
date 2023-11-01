@@ -34,9 +34,11 @@ std::vector<UserInfo> ParseUsers(QByteArray reply)
     QJsonObject rootObject = itemDoc.object();
     QJsonArray array = rootObject.value("users").toArray();
     std::vector<UserInfo> answer;
+    int currUserId = getCurrUserId();
     for (const QJsonValue & value : array) {
         QJsonObject obj = value.toObject();
-        answer.emplace_back(obj["id"].toInt(), obj["nickname"].toString());
+        if (obj["id"].toInt() != currUserId)
+            answer.emplace_back(obj["id"].toInt(), obj["nickname"].toString());
     }
     return answer;
 }
