@@ -198,12 +198,18 @@ void ChatWidget::SetExistingDialogs()
 
 void ChatWidget::SetDialog(QListWidgetItem * clickedItem)
 {
+    ui->lineEdit->clear();
+
+    UserItemWidget *itemWidget = qobject_cast<UserItemWidget*>(ui->listWidget_2->itemWidget(clickedItem));
+
     ui->stackedWidget_2->setCurrentIndex(1);
-    ui->label_4->setText(clickedItem->text());
+    ui->label_4->setText(itemWidget->GetName());
     m_CurrDialogUserId = clickedItem->data(Qt::UserRole).toInt();
-    UpdateTextBrowser();
     if (!m_dialogsManager->IsDialogExist(clickedItem->data(Qt::UserRole).toInt())){
-        SendCreateDialogReq(getCurrUserId(), clickedItem->data(Qt::UserRole).toInt(), clickedItem->text());
+        SendCreateDialogReq(getCurrUserId(), clickedItem->data(Qt::UserRole).toInt(), itemWidget->GetName());
+    }
+    else{
+        UpdateTextBrowser();
     }
 }
 

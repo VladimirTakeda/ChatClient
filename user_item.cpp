@@ -9,6 +9,11 @@ UserItemWidget::UserItemWidget(QWidget* parent)
     ui->setupUi(this);
 }
 
+QString UserItemWidget::GetName() const
+{
+    return ui->label_4->text();
+}
+
 UserItemWidget::~UserItemWidget()
 {
 

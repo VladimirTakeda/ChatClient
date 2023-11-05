@@ -13,6 +13,7 @@ class UserItemWidget : public QWidget
     Q_OBJECT
 public:
     UserItemWidget(QWidget *parent = nullptr);
+    QString GetName() const;
     void SetName(const QString& name);
     void SetLastText(const QString& lastText);
     void SetUnreadCount(int count);
