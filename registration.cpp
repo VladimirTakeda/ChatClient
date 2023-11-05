@@ -66,6 +66,7 @@ void RegistrationWidget::SaveUserInfo(int userId, const QString& userName)
     QSettings settings(QApplication::applicationDirPath() + "/settings.ini", QSettings::IniFormat);
     settings.setValue("userId", userId);
     settings.setValue("registered", true);
+    settings.setValue("currUserName", userName);
 }
 
 void RegistrationWidget::SetChatWindow()
