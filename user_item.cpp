@@ -25,3 +25,9 @@ void UserItemWidget::SetLastText(const QString& lastText)
     ui->label_3->setText(lastText);
     ui->label_3->update();
 }
+
+void UserItemWidget::SetUnreadCount(int count)
+{
+    ui->label_5->setText(QString::number(count));
+    ui->label_5->setStyleSheet("background-color: gray; color: white; border-radius: 10px; padding: 5px;");
+}

@@ -45,7 +45,7 @@ void RegistrationWidget::Register()
     request.setUrl(url);
     request.setRawHeader("Content-Type", "application/json");
 
-    m_httpClient->sendHttpRequest(std::move(request), std::move(data), std::bind(&RegistrationWidget::RegisterUserReply, this, std::placeholders::_1));
+    m_httpClient->sendHttpRequest(std::move(request), std::move(data), {}, std::bind(&RegistrationWidget::RegisterUserReply, this, std::placeholders::_1));
 }
 
 void RegistrationWidget::RegisterUserReply(QNetworkReply *reply){
@@ -62,8 +62,9 @@ void RegistrationWidget::RegisterUserReply(QNetworkReply *reply){
 
 void RegistrationWidget::SaveUserId(int userId)
 {
-    QSettings settings(QDir(QApplication::applicationDirPath()).filePath("settings.ini"));
+    QSettings settings(QApplication::applicationDirPath() + "/settings.ini", QSettings::IniFormat);
     settings.setValue("userId", userId);
+    settings.setValue("registered", true);
 }
 
 void RegistrationWidget::SetChatWindow()

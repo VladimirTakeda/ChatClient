@@ -9,14 +9,17 @@ struct Message {
     bool isMyMessage;
 };
 
+class DialogsManager;
+
 class Dialog
 {
+    friend DialogsManager;
 public:
-    Dialog();
+    Dialog(int64_t contactId);
     void addMessage(const Message& msg);
     const QString & GetHtmlDialog() const;
 private:
-    QString m_contactName;
+    int64_t m_contactId;
     QList<Message> m_messages;
     QString m_htmlMessages;
 };

@@ -15,6 +15,7 @@ public:
     UserItemWidget(QWidget *parent = nullptr);
     void SetName(const QString& name);
     void SetLastText(const QString& lastText);
+    void SetUnreadCount(int count);
     ~UserItemWidget();
 
 private:

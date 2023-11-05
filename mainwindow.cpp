@@ -25,11 +25,13 @@ MainWindow::MainWindow(QWidget *parent)
     m_layout->addWidget( m_chatWidget );
     m_layout->addWidget( m_unregisterWidget );
     m_layout->addWidget( m_registrationWidget );
+
+    m_chatWidget->LoadDialogs();
 }
 
 void MainWindow::SetCentralWidet()
 {
-    QSettings settings(QDir(QApplication::applicationDirPath()).filePath("settings.ini"));
+    QSettings settings(QApplication::applicationDirPath() + "/settings.ini", QSettings::IniFormat);
 
     bool IsRegistered = settings.value("registered", false).toBool();
 
@@ -50,6 +52,17 @@ void MainWindow::SetRegistrationWidget(){
 void MainWindow::SetChatWidget(){
     m_layout->setCurrentWidget(m_chatWidget);
     m_chatWidget->SetUpWSConnection();
+}
+
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+    SaveMetaData();
+    QMainWindow::closeEvent(event);
+}
+
+void MainWindow::SaveMetaData()
+{
+    m_chatWidget->SaveDialogs();
 }
 
 MainWindow::~MainWindow()

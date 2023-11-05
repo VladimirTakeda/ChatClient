@@ -12,6 +12,7 @@ namespace WebSocket{
 
 struct Message{
     QString text;
+    QString userNameFrom;
     int userFrom;
     int userTo;
 };

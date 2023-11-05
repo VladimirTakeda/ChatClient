@@ -48,6 +48,7 @@ void WebSocketClient::OnTextMessageRecieved(QString message){
     msg.text = rootObject.value("content").toString();
     msg.userFrom = rootObject.value("user_from_id").toInt();
     msg.userTo = rootObject.value("user_to_id").toInt();
+    msg.userNameFrom = rootObject.value("user_name_from").toString();
     m_callBack(msg);
 }
 

@@ -25,6 +25,12 @@ public:
     void SetChatWidget();
     ~MainWindow();
 
+protected:
+    void closeEvent(QCloseEvent* event) override;
+
+private:
+    void SaveMetaData();
+
 private:
     std::shared_ptr<HttpClient> m_httpClient;
     ChatWidget* m_chatWidget;

@@ -18,7 +18,7 @@ public:
     HttpClient(QObject* parent = nullptr);
 
 public:
-    void sendHttpRequest(QNetworkRequest&& request, QByteArray&& data, std::function<void(QNetworkReply *)>);
+    void sendHttpRequest(QNetworkRequest&& request, QByteArray&& data, const std::vector<std::pair<std::string, QVariant>>& properties, std::function<void(QNetworkReply *)>);
 private slots:
     void onRequestFinished(QNetworkReply* reply);
 

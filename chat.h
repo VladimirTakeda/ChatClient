@@ -33,11 +33,15 @@ class ChatWidget : public QWidget
 public:
     ChatWidget(std::shared_ptr<HttpClient>, QWidget *parent = nullptr);
     void SetUpWSConnection();
+    void LoadDialogs();
+    void SaveDialogs() const;
     ~ChatWidget();
 
 private:
+    void AddAndSetNewDialog(int userId, const QString& name, std::optional<QString> lastMessage, bool needSetItem);
+    void SetExistingDialogs();
     void SetSearchResults(const std::vector<UserInfo>& results);
-    void SendCreateDialogReq(int fromUser, int toUser);
+    void SendCreateDialogReq(int fromUser, int toUser, const QString& toUserName);
     void GetNewMessage(WebSocket::Message mgs);
     void UpdateTextBrowser();
 
@@ -52,8 +56,6 @@ private:
     Ui::ChatUI *ui;
     QNetworkAccessManager* m_networkMgr;
     std::unique_ptr<WebSocket::WebSocketClient> m_client;
-    int lastUserId = 0;
-    std::unordered_map<int,int> m_UserToChatId;
     std::shared_ptr<HttpClient> m_httpClient;
     std::unordered_map<QString, int> m_DialogsToId;
     std::unique_ptr<DialogsManager> m_dialogsManager;
