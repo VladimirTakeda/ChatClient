@@ -45,14 +45,15 @@ void RegistrationWidget::Register()
     request.setUrl(url);
     request.setRawHeader("Content-Type", "application/json");
 
-    m_httpClient->sendHttpRequest(std::move(request), std::move(data), {}, std::bind(&RegistrationWidget::RegisterUserReply, this, std::placeholders::_1));
+    m_httpClient->sendHttpRequest(std::move(request), std::move(data), {{"currUserName", ui->lineEdit_3->text()}}, std::bind(&RegistrationWidget::RegisterUserReply, this, std::placeholders::_1));
 }
 
 void RegistrationWidget::RegisterUserReply(QNetworkReply *reply){
     if (reply->error() == QNetworkReply::NoError) {
         QJsonDocument itemDoc = QJsonDocument::fromJson(reply->readAll());
         QJsonObject rootObject = itemDoc.object();
-        SaveUserId(rootObject.value("userId").toInt());
+
+        SaveUserInfo(rootObject.value("userId").toInt(), reply->property("currUserName").toString());
         SetChatWindow();
     }
     else {
@@ -60,11 +61,12 @@ void RegistrationWidget::RegisterUserReply(QNetworkReply *reply){
     }
 }
 
-void RegistrationWidget::SaveUserId(int userId)
+void RegistrationWidget::SaveUserInfo(int userId, const QString& userName)
 {
     QSettings settings(QApplication::applicationDirPath() + "/settings.ini", QSettings::IniFormat);
     settings.setValue("userId", userId);
     settings.setValue("registered", true);
+    settings.setValue("currUserName", userName);
 }
 
 void RegistrationWidget::SetChatWindow()

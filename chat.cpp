@@ -31,7 +31,7 @@ int getCurrUserId(){
 QString getCurrUserName(){
     QSettings settings(QApplication::applicationDirPath() + "/settings.ini", QSettings::IniFormat);
     qDebug() << settings.fileName();
-    return settings.value("user_name_from").toString();
+    return settings.value("currUserName").toString();
 }
 
 std::vector<UserInfo> ParseUsers(QByteArray reply)
