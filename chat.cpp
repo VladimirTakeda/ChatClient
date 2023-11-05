@@ -104,11 +104,15 @@ void ChatWidget::SaveDialogs() const
 void ChatWidget::GetNewMessage(WebSocket::Message msg)
 {
     // MayCreateNewDialog
-    if (!m_dialogsManager->IsDialogExist(msg.userFrom)){
-        m_dialogsManager->CreateNewChat(msg.userFrom, msg.userNameFrom);
-        AddAndSetNewDialog(msg.userFrom, msg.userNameFrom, msg.text, false);
+    const int &userTo = [&msg](){
+        if (msg.isMyMessage)
+            return msg.userTo;
+        return msg.userFrom;
+    }();
+    if (!m_dialogsManager->IsDialogExist(userTo)){
+        m_dialogsManager->CreateNewChat(userTo, msg.userNameFrom);
     }
-    m_dialogsManager->AddMessage(msg.userFrom, {msg.text, false});
+    m_dialogsManager->AddMessage(userTo, {msg.text, msg.isMyMessage});
     UpdateTextBrowser();
 }
 
@@ -126,9 +130,6 @@ void ChatWidget::on_lineEdit_2_returnPressed()
     obj["user_from_id"] = getCurrUserId();
     obj["user_to_id"] = m_CurrDialogUserId;
     obj["user_name_from"] = getCurrUserName();
-
-    m_dialogsManager->AddMessage(m_CurrDialogUserId, {ui->lineEdit_2->text(), true});
-    UpdateTextBrowser();
 
     QJsonDocument doc(obj);
 

@@ -15,6 +15,7 @@ struct Message{
     QString userNameFrom;
     int userFrom;
     int userTo;
+    bool isMyMessage;
 };
 
 class WebSocketClient : public QObject{

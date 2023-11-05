@@ -14,6 +14,7 @@ void DialogsManager::CreateNewChat(int UserToId, const QString &userToName)
 {
     //m_UserToChatId[UserToId] = chatId;
     m_IdToName[UserToId] = userToName;
+    m_IdToDialog.emplace(UserToId, Dialog(UserToId));
 }
 
 void DialogsManager::AddMessage(int userId, const Message& msg)
