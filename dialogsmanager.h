@@ -3,8 +3,11 @@
 
 #include "dialog.h"
 
+class ChatWidget;
+
 class DialogsManager
 {
+    friend ChatWidget;
 public:
     DialogsManager();
     void CreateNewChat(int UserToId, const QString& userToName);

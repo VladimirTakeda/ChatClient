@@ -80,10 +80,10 @@ void ChatWidget::AddNewDialog(int userId, const QString& name, bool needSetItem)
     ui->stackedWidget->setCurrentIndex(0);
 }
 
-void ChatWidget::UpdateDialog(int userId, const QString &lastMessage, bool IsSelected, const QDateTime& localMsgTime)
+void ChatWidget::UpdateDialog(int userId, const QString &lastMessage, bool NeedIncrement, const QDateTime& localMsgTime)
 {
     UserItemWidget *itemWidget = qobject_cast<UserItemWidget*>(ui->listWidget->itemWidget(m_idToDialogWidget[userId]));
-    if (!IsSelected)
+    if (NeedIncrement)
         itemWidget->IncrementUnreadCount();
     itemWidget->SetLastText(lastMessage);
     itemWidget->SetLastTextTime(localMsgTime);
@@ -98,6 +98,10 @@ void ChatWidget::SetUpWSConnection(){
 void ChatWidget::LoadDialogs()
 {
     m_dialogsManager->LoadFromMemory();
+    for (const auto& [userId, value]: m_dialogsManager->m_IdToDialog){
+        AddNewDialog(userId, m_dialogsManager->m_IdToName[userId], false);
+        UpdateDialog(userId, value.m_messages.back().text, false, value.m_messages.back().time);
+    }
 }
 
 void ChatWidget::SaveDialogs() const
@@ -117,7 +121,7 @@ void ChatWidget::GetNewMessage(WebSocket::Message msg)
         m_dialogsManager->CreateNewChat(userTo, msg.userNameFrom);
         AddNewDialog(userTo, msg.userNameFrom, false);
     }
-    m_dialogsManager->AddMessage(userTo, {msg.text, msg.isMyMessage});
+    m_dialogsManager->AddMessage(userTo, {msg.text, msg.isMyMessage, msg.time});
     //if it's current dialog then update otherwise no
     bool IsSelectedDialog = false;
     if (auto currItem = ui->listWidget->currentItem(); currItem != nullptr && currItem->data(Qt::UserRole).toInt() == userTo)
@@ -126,7 +130,7 @@ void ChatWidget::GetNewMessage(WebSocket::Message msg)
     if (IsSelectedDialog)
         UpdateTextBrowser(userTo);
 
-    UpdateDialog(userTo, msg.text, IsSelectedDialog, msg.time);
+    UpdateDialog(userTo, msg.text, !IsSelectedDialog, msg.time);
 }
 
 void ChatWidget::UpdateTextBrowser(int selectedContactId)

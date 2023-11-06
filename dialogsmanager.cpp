@@ -5,6 +5,8 @@
 
 #include <QString>
 
+#include <QFile>
+
 DialogsManager::DialogsManager()
 {
 
@@ -48,21 +50,31 @@ void DialogsManager::SaveToMemory() const
 
 void DialogsManager::SaveDialogs() const
 {
-    std::ofstream outFile("dialogs", std::ios::trunc);
-    if (outFile.is_open()) {
-        outFile << static_cast<uint64_t>(m_IdToDialog.size());
+    QFile outFile("dialogs");
+    if (outFile.open(QIODevice::WriteOnly)) {
+        QDataStream out(&outFile);
+
+        out << static_cast<uint64_t>(m_IdToDialog.size());;
+
         for (const auto& [dialogId, dialog] : m_IdToDialog) {
-            outFile << static_cast<uint64_t>(dialogId);
-            outFile << static_cast<uint64_t>(dialog.m_messages.size());
+            out << static_cast<uint64_t>(dialogId);;
+            out << static_cast<uint64_t>(dialog.m_messages.size());
+
             for (const Message& msg : dialog.m_messages) {
-                outFile << msg.isMyMessage << msg.text.toStdString();
+                out << msg.isMyMessage;
+
+                QByteArray text = msg.text.toUtf8();
+                uint64_t msgSize = static_cast<uint64_t>(text.size());
+                out << msgSize;
+                out.writeRawData(text.constData(), msgSize);
+                out << msg.time;
             }
         }
-        outFile.close();
-    } else {
 
+        outFile.close();
     }
 }
+
 void DialogsManager::SaveGuiDialogs() const
 {
     std::ofstream outFile("data.txt", std::ios::binary);
@@ -86,28 +98,40 @@ void DialogsManager::SaveGuiDialogs() const
         // Обработка ошибки открытия файла
     }
 }
+
 void DialogsManager::LoadDialogs()
 {
-    std::ifstream inFile("dialogs");
-    if (inFile.is_open()) {
+    QFile inFile("dialogs");
+    if (inFile.open(QIODevice::ReadOnly)) {
         m_IdToDialog.clear();
 
-        uint64_t dialogsCount = 0;
-        inFile >> dialogsCount;
+        QDataStream in(&inFile);
 
-        for (int i = 0; i < dialogsCount; i++){
-            int64_t dialogId = 0;
-            int64_t messagesCount = 0;
-            inFile >> dialogId >> messagesCount;
+        uint64_t dialogsCount = 0;
+        in >> dialogsCount;
+
+        for (uint64_t i = 0; i < dialogsCount; i++){
+            uint64_t dialogId = 0;
+            uint64_t messagesCount = 0;
+            in >> dialogId;
+            in >> messagesCount;
 
             Dialog currentDialog(dialogId);
 
             bool isMyMessage;
-            std::string text;
 
             for (int j = 0; j < messagesCount; j++) {
-                inFile >> isMyMessage >> text;
-                currentDialog.addMessage({QString::fromStdString(text), isMyMessage});
+                in >> isMyMessage;
+                uint64_t size;
+                in >> size;
+
+                QByteArray text;
+                text.resize(size);
+                in.readRawData(text.data(), size);
+                QDateTime time;
+                in >> time;
+
+                currentDialog.addMessage({QString::fromUtf8(text), isMyMessage, time});
             }
 
             if (!currentDialog.m_messages.empty()) {
@@ -118,6 +142,7 @@ void DialogsManager::LoadDialogs()
         inFile.close();
     }
 }
+
 void DialogsManager::LoadGuiDialogs()
 {
     std::ifstream inFile("data.txt", std::ios::binary);
