@@ -50,6 +50,9 @@ void WebSocketClient::OnTextMessageRecieved(QString message){
     msg.userTo = rootObject.value("user_to_id").toInt();
     msg.userNameFrom = rootObject.value("user_name_from").toString();
     msg.isMyMessage = rootObject.value("is_my_message").toBool();
+
+    msg.time = QDateTime::fromString(rootObject.value("time").toString(), Qt::ISODate).toLocalTime();
+
     m_callBack(msg);
 }
 

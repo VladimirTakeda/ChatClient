@@ -38,12 +38,13 @@ public:
     ~ChatWidget();
 
 private:
-    void AddAndSetNewDialog(int userId, const QString& name, std::optional<QString> lastMessage, bool needSetItem);
+    void AddNewDialog(int userId, const QString& name, bool needSetItem);
+    void UpdateDialog(int userId, const QString& lastMessage, bool IsSelected, const QDateTime& localMsgTime);
     void SetExistingDialogs();
     void SetSearchResults(const std::vector<UserInfo>& results);
     void SendCreateDialogReq(int fromUser, int toUser, const QString& toUserName);
     void GetNewMessage(WebSocket::Message mgs);
-    void UpdateTextBrowser();
+    void UpdateTextBrowser(int selectedContactId);
 
 private slots:
     void on_lineEdit_2_returnPressed();
@@ -51,15 +52,18 @@ private slots:
     void LookingForPeopleReply(QNetworkReply *rep);
     void CreateChatReply(QNetworkReply *rep);
     void SetDialog(QListWidgetItem *);
+    void SetNewDialog(QListWidgetItem *);
 
 private:
     Ui::ChatUI *ui;
-    QNetworkAccessManager* m_networkMgr;
+
+    std::unordered_map<int, QListWidgetItem*> m_idToDialogWidget;
+
     std::unique_ptr<WebSocket::WebSocketClient> m_client;
     std::shared_ptr<HttpClient> m_httpClient;
+
     std::unordered_map<QString, int> m_DialogsToId;
     std::unique_ptr<DialogsManager> m_dialogsManager;
-    int m_CurrDialogUserId;
 };
 
 #endif // CHATWIDGET_H

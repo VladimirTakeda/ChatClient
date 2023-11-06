@@ -16,7 +16,9 @@ public:
     QString GetName() const;
     void SetName(const QString& name);
     void SetLastText(const QString& lastText);
-    void SetUnreadCount(int count);
+    void SetLastTextTime(const QDateTime& lastTextLime);
+    void IncrementUnreadCount();
+    void ClearUnreadCount();
     ~UserItemWidget();
 
 private:

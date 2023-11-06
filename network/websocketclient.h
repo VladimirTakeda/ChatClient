@@ -16,6 +16,7 @@ struct Message{
     int userFrom;
     int userTo;
     bool isMyMessage;
+    QDateTime time;
 };
 
 class WebSocketClient : public QObject{
