@@ -76,6 +76,8 @@ void ChatWidget::AddNewWidgetDialog(int userId, const QString& name, bool needSe
     contactItem->setSizeHint(newUser->sizeHint());
     ui->listWidget->addItem(contactItem);
     ui->listWidget->setItemWidget(contactItem, newUser);
+    if (needSetItem)
+        contactItem->setSelected(true);
     m_idToDialogWidget.emplace(userId, contactItem);
     ui->stackedWidget->setCurrentIndex(0);
 }
