@@ -57,7 +57,8 @@ void DialogsManager::SaveDialogs() const
         out << static_cast<uint64_t>(m_IdToDialog.size());;
 
         for (const auto& [dialogId, dialog] : m_IdToDialog) {
-            out << static_cast<uint64_t>(dialogId);;
+            out << static_cast<uint64_t>(dialogId);
+            out << dialog.m_unreadCount;
             out << static_cast<uint64_t>(dialog.m_messages.size());
 
             for (const Message& msg : dialog.m_messages) {
@@ -114,9 +115,9 @@ void DialogsManager::LoadDialogs()
             uint64_t dialogId = 0;
             uint64_t messagesCount = 0;
             in >> dialogId;
-            in >> messagesCount;
-
             Dialog currentDialog(dialogId);
+            in >> currentDialog.m_unreadCount;
+            in >> messagesCount;
 
             bool isMyMessage;
 

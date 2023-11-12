@@ -42,6 +42,7 @@ void WebSocketClient::OnCloseConnection(){
 }
 
 void WebSocketClient::OnTextMessageRecieved(QString message){
+    qDebug() << message;
     QJsonDocument itemDoc = QJsonDocument::fromJson(message.toUtf8());
     QJsonObject rootObject = itemDoc.object();
     Message msg;

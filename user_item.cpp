@@ -51,6 +51,15 @@ void UserItemWidget::IncrementUnreadCount()
     ui->label_5->setStyleSheet("background-color: gray; color: white; border-radius: 10px; padding: 5px;");
 }
 
+void UserItemWidget::SetUnreadCount(uint64_t unreadCount)
+{
+    if (unreadCount > 0)
+    {
+        ui->label_5->setText(QString::number(unreadCount));
+        ui->label_5->setStyleSheet("background-color: gray; color: white; border-radius: 10px; padding: 5px;");
+    }
+}
+
 void UserItemWidget::ClearUnreadCount()
 {
     ui->label_5->clear();

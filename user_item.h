@@ -18,6 +18,7 @@ public:
     void SetLastText(const QString& lastText);
     void SetLastTextTime(const QDateTime& lastTextLime);
     void IncrementUnreadCount();
+    void SetUnreadCount(uint64_t unreadCount);
     void ClearUnreadCount();
     ~UserItemWidget();
 

@@ -23,6 +23,7 @@ public:
     void addMessage(const Message& msg);
     const QString & GetHtmlDialog() const;
 private:
+    uint64_t m_unreadCount;
     int64_t m_contactId;
     QList<Message> m_messages;
     QString m_htmlMessages;

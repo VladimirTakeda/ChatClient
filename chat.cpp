@@ -67,7 +67,7 @@ ChatWidget::~ChatWidget()
 {
 }
 
-void ChatWidget::AddNewDialog(int userId, const QString& name, bool needSetItem)
+void ChatWidget::AddNewWidgetDialog(int userId, const QString& name, bool needSetItem)
 {
     QListWidgetItem *contactItem = new QListWidgetItem(ui->listWidget);
     auto newUser = new UserItemWidget();
@@ -80,11 +80,21 @@ void ChatWidget::AddNewDialog(int userId, const QString& name, bool needSetItem)
     ui->stackedWidget->setCurrentIndex(0);
 }
 
-void ChatWidget::UpdateDialog(int userId, const QString &lastMessage, bool NeedIncrement, const QDateTime& localMsgTime)
+void ChatWidget::UpdateWidgetDialog(int userId, const QString &lastMessage, uint64_t unreadCount, const QDateTime& localMsgTime)
 {
     UserItemWidget *itemWidget = qobject_cast<UserItemWidget*>(ui->listWidget->itemWidget(m_idToDialogWidget[userId]));
-    if (NeedIncrement)
+    itemWidget->SetUnreadCount(unreadCount);
+    itemWidget->SetLastText(lastMessage);
+    itemWidget->SetLastTextTime(localMsgTime);
+}
+
+void ChatWidget::AddMessageToWidgetDialog(int userId, const QString &lastMessage, bool NeedIncrement, const QDateTime& localMsgTime)
+{
+    UserItemWidget *itemWidget = qobject_cast<UserItemWidget*>(ui->listWidget->itemWidget(m_idToDialogWidget[userId]));
+    if (NeedIncrement){
         itemWidget->IncrementUnreadCount();
+        m_dialogsManager->m_IdToDialog.at(userId).m_unreadCount++;
+    }
     itemWidget->SetLastText(lastMessage);
     itemWidget->SetLastTextTime(localMsgTime);
 }
@@ -99,8 +109,8 @@ void ChatWidget::LoadDialogs()
 {
     m_dialogsManager->LoadFromMemory();
     for (const auto& [userId, value]: m_dialogsManager->m_IdToDialog){
-        AddNewDialog(userId, m_dialogsManager->m_IdToName[userId], false);
-        UpdateDialog(userId, value.m_messages.back().text, false, value.m_messages.back().time);
+        AddNewWidgetDialog(userId, m_dialogsManager->m_IdToName[userId], false);
+        UpdateWidgetDialog(userId, value.m_messages.back().text, value.m_unreadCount, value.m_messages.back().time);
     }
 }
 
@@ -119,7 +129,7 @@ void ChatWidget::GetNewMessage(WebSocket::Message msg)
     }();
     if (!m_dialogsManager->IsDialogExist(userTo)){
         m_dialogsManager->CreateNewChat(userTo, msg.userNameFrom);
-        AddNewDialog(userTo, msg.userNameFrom, false);
+        AddNewWidgetDialog(userTo, msg.userNameFrom, false);
     }
     m_dialogsManager->AddMessage(userTo, {msg.text, msg.isMyMessage, msg.time});
     //if it's current dialog then update otherwise no
@@ -130,7 +140,7 @@ void ChatWidget::GetNewMessage(WebSocket::Message msg)
     if (IsSelectedDialog)
         UpdateTextBrowser(userTo);
 
-    UpdateDialog(userTo, msg.text, !IsSelectedDialog, msg.time);
+    AddMessageToWidgetDialog(userTo, msg.text, !IsSelectedDialog, msg.time);
 }
 
 void ChatWidget::UpdateTextBrowser(int selectedContactId)
@@ -217,7 +227,9 @@ void ChatWidget::SetExistingDialogs()
 void ChatWidget::SetDialog(QListWidgetItem * clickedItem)
 {
     UserItemWidget *itemWidget = qobject_cast<UserItemWidget*>(ui->listWidget->itemWidget(clickedItem));
+
     itemWidget->ClearUnreadCount();
+    m_dialogsManager->m_IdToDialog.at(clickedItem->data(Qt::UserRole).toInt()).m_unreadCount = 0;
 
     ui->stackedWidget_2->setCurrentIndex(1);
     ui->label_4->setText(itemWidget->GetName());
@@ -270,7 +282,7 @@ void ChatWidget::CreateChatReply(QNetworkReply *reply){
         //TODO use when rooms will be introduced
         // rootObject.value("chatId").toInt()
         m_dialogsManager->CreateNewChat(reply->property("toUserId").toInt(), reply->property("toUserName").toString());
-        AddNewDialog(reply->property("toUserId").toInt(), reply->property("toUserName").toString(), true);
+        AddNewWidgetDialog(reply->property("toUserId").toInt(), reply->property("toUserName").toString(), true);
     }
     else {
         qDebug() << "Failure" <<reply->errorString();
