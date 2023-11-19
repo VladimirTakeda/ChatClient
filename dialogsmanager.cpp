@@ -12,26 +12,33 @@ DialogsManager::DialogsManager()
 
 }
 
-void DialogsManager::CreateNewChat(int UserToId, const QString &userToName)
+void DialogsManager::CreateNewChat(std::optional<int> userId, int chatId, const QString &userToName)
 {
     //m_UserToChatId[UserToId] = chatId;
-    m_IdToName[UserToId] = userToName;
-    m_IdToDialog.emplace(UserToId, Dialog(UserToId));
+    if (userId)
+        m_users.insert(userId.value());
+    m_IdToName[chatId] = userToName;
+    m_IdToDialog.emplace(chatId, Dialog(chatId));
 }
 
-void DialogsManager::AddMessage(int userId, const Message& msg)
+void DialogsManager::AddMessage(int chatId, const Message& msg)
 {
-    m_IdToDialog.at(userId).addMessage(msg);
+    m_IdToDialog.at(chatId).addMessage(msg);
 }
 
-const Dialog& DialogsManager::GetDialog(int userId)
+const Dialog& DialogsManager::GetDialog(int chatId)
 {
-    return  m_IdToDialog.at(userId);
+    return  m_IdToDialog.at(chatId);
 }
 
-bool DialogsManager::IsDialogExist(int userId) const
+bool DialogsManager::IsChatExist(int chatId) const
 {
-    return m_IdToDialog.count(userId);
+    return m_IdToDialog.count(chatId);
+}
+
+bool DialogsManager::IsDialogWithUserExist(int userId) const
+{
+    return m_users.count(userId);
 }
 
 //TODO rewrite to binary format
@@ -54,7 +61,11 @@ void DialogsManager::SaveDialogs() const
     if (outFile.open(QIODevice::WriteOnly)) {
         QDataStream out(&outFile);
 
-        out << static_cast<uint64_t>(m_IdToDialog.size());;
+        out << static_cast<uint64_t>(m_users.size());
+        for (auto elem : m_users)
+            out << elem;
+
+        out << static_cast<uint64_t>(m_IdToDialog.size());
 
         for (const auto& [dialogId, dialog] : m_IdToDialog) {
             out << static_cast<uint64_t>(dialogId);
@@ -107,6 +118,14 @@ void DialogsManager::LoadDialogs()
         m_IdToDialog.clear();
 
         QDataStream in(&inFile);
+
+        uint64_t usersCount = 0;
+        in << usersCount;
+        for (uint64_t i = 0; i < usersCount; i++){
+            int elem;
+            in >> elem;
+            m_users.insert(elem);
+        }
 
         uint64_t dialogsCount = 0;
         in >> dialogsCount;

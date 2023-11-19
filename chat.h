@@ -38,8 +38,8 @@ public:
     ~ChatWidget();
 
 private:
-    void AddNewWidgetDialog(int userId, const QString& name, bool needSetItem);
-    void UpdateWidgetDialog(int userId, const QString& lastMessage, uint64_t unreadCount, const QDateTime& localMsgTime);
+    void AddNewWidgetDialog(int chatId, const QString& name, bool needSetItem);
+    void UpdateWidgetDialog(int chatId, const QString& lastMessage, uint64_t unreadCount, const QDateTime& localMsgTime);
     void AddMessageToWidgetDialog(int userId, const QString &lastMessage, bool NeedIncrement, const QDateTime& localMsgTime);
     void SetExistingDialogs();
     void SetSearchResults(const std::vector<UserInfo>& results);

@@ -1,6 +1,6 @@
 #include "dialog.h"
 
-Dialog::Dialog(int64_t contactId) : m_contactId(contactId), m_unreadCount(0)
+Dialog::Dialog(int64_t chatId) : m_chatId(chatId), m_unreadCount(0)
 {
 }
 

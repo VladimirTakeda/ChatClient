@@ -19,12 +19,12 @@ class Dialog
     friend DialogsManager;
     friend ChatWidget;
 public:
-    Dialog(int64_t contactId);
+    Dialog(int64_t chatId);
     void addMessage(const Message& msg);
     const QString & GetHtmlDialog() const;
 private:
     uint64_t m_unreadCount;
-    int64_t m_contactId;
+    int64_t m_chatId;
     QList<Message> m_messages;
     QString m_htmlMessages;
 };

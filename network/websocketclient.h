@@ -12,9 +12,9 @@ namespace WebSocket{
 
 struct Message{
     QString text;
-    QString userNameFrom;
+    QString chatName;
     int userFrom;
-    int userTo;
+    int chatTo;
     bool isMyMessage;
     QDateTime time;
 };

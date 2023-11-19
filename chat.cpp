@@ -6,6 +6,8 @@
 #include "network/websocketclient.h"
 #include "network/httpclient.h"
 
+#include "utils.h"
+
 #include <QNetworkAccessManager>
 #include <QJsonObject>
 #include <QJsonDocument>
@@ -20,25 +22,7 @@ UserInfo::UserInfo(int userId, QString&& userNickname) : userId(userId), userLog
 
 }
 
-namespace {
-
-int getCurrUserId(){
-    QSettings settings(QApplication::applicationDirPath() + "/settings.ini", QSettings::IniFormat);
-    qDebug() << settings.fileName();
-    return settings.value("userId").toInt();
-}
-
-QString getCurrDeviceId(){
-    QSettings settings(QApplication::applicationDirPath() + "/settings.ini", QSettings::IniFormat);
-    qDebug() << settings.fileName();
-    return settings.value("deviceId").toString();
-}
-
-QString getCurrUserName(){
-    QSettings settings(QApplication::applicationDirPath() + "/settings.ini", QSettings::IniFormat);
-    qDebug() << settings.fileName();
-    return settings.value("currUserName").toString();
-}
+namespace{
 
 std::vector<UserInfo> ParseUsers(QByteArray reply)
 {
@@ -55,6 +39,7 @@ std::vector<UserInfo> ParseUsers(QByteArray reply)
     }
     return answer;
 }
+
 }
 
 ChatWidget::ChatWidget(std::shared_ptr<HttpClient> httpClient, QWidget *parent)
@@ -73,18 +58,18 @@ ChatWidget::~ChatWidget()
 {
 }
 
-void ChatWidget::AddNewWidgetDialog(int userId, const QString& name, bool needSetItem)
+void ChatWidget::AddNewWidgetDialog(int chatId, const QString& name, bool needSetItem)
 {
     QListWidgetItem *contactItem = new QListWidgetItem(ui->listWidget);
     auto newUser = new UserItemWidget();
     newUser->SetName(name);
-    contactItem->setData(Qt::UserRole, userId);
+    contactItem->setData(Qt::UserRole, chatId);
     contactItem->setSizeHint(newUser->sizeHint());
     ui->listWidget->addItem(contactItem);
     ui->listWidget->setItemWidget(contactItem, newUser);
     if (needSetItem)
         contactItem->setSelected(true);
-    m_idToDialogWidget.emplace(userId, contactItem);
+    m_idToDialogWidget.emplace(chatId, contactItem);
     ui->stackedWidget->setCurrentIndex(0);
 }
 
@@ -129,25 +114,20 @@ void ChatWidget::SaveDialogs() const
 void ChatWidget::GetNewMessage(WebSocket::Message msg)
 {
     // MayCreateNewDialog
-    const int &userTo = [&msg](){
-        if (msg.isMyMessage)
-            return msg.userTo;
-        return msg.userFrom;
-    }();
-    if (!m_dialogsManager->IsDialogExist(userTo)){
-        m_dialogsManager->CreateNewChat(userTo, msg.userNameFrom);
-        AddNewWidgetDialog(userTo, msg.userNameFrom, false);
+    if (!m_dialogsManager->IsChatExist(msg.chatTo)){
+        m_dialogsManager->CreateNewChat(msg.userFrom, msg.chatTo, msg.chatName);
+        AddNewWidgetDialog(msg.chatTo, msg.chatName, false);
     }
-    m_dialogsManager->AddMessage(userTo, {msg.text, msg.isMyMessage, msg.time});
+    m_dialogsManager->AddMessage(msg.chatTo, {msg.text, msg.isMyMessage, msg.time});
     //if it's current dialog then update otherwise no
     bool IsSelectedDialog = false;
-    if (auto currItem = ui->listWidget->currentItem(); currItem != nullptr && currItem->data(Qt::UserRole).toInt() == userTo)
+    if (auto currItem = ui->listWidget->currentItem(); currItem != nullptr && currItem->data(Qt::UserRole).toInt() == msg.chatTo)
         IsSelectedDialog = true;
 
     if (IsSelectedDialog)
-        UpdateTextBrowser(userTo);
+        UpdateTextBrowser(msg.chatTo);
 
-    AddMessageToWidgetDialog(userTo, msg.text, !IsSelectedDialog, msg.time);
+    AddMessageToWidgetDialog(msg.chatTo, msg.text, !IsSelectedDialog, msg.time);
 }
 
 void ChatWidget::UpdateTextBrowser(int selectedContactId)
@@ -162,7 +142,7 @@ void ChatWidget::on_lineEdit_2_returnPressed()
     QJsonObject obj;
     obj["content"] = ui->lineEdit_2->text();
     obj["user_from_id"] = getCurrUserId();
-    obj["user_to_id"] = ui->listWidget->currentItem()->data(Qt::UserRole).toInt();
+    obj["chat_to_id"] = ui->listWidget->currentItem()->data(Qt::UserRole).toInt();
     obj["user_name_from"] = getCurrUserName();
 
     QJsonDocument doc(obj);
@@ -251,7 +231,7 @@ void ChatWidget::SetNewDialog(QListWidgetItem * clickedItem)
 
     ui->stackedWidget_2->setCurrentIndex(1);
     ui->label_4->setText(itemWidget->GetName());
-    if (!m_dialogsManager->IsDialogExist(clickedItem->data(Qt::UserRole).toInt())){
+    if (!m_dialogsManager->IsDialogWithUserExist(clickedItem->data(Qt::UserRole).toInt())){
         SendCreateDialogReq(getCurrUserId(), clickedItem->data(Qt::UserRole).toInt(), itemWidget->GetName());
     }
     else{
@@ -286,10 +266,8 @@ void ChatWidget::CreateChatReply(QNetworkReply *reply){
         // CreateNewDialog
         QJsonDocument itemDoc = QJsonDocument::fromJson(reply->readAll());
         QJsonObject rootObject = itemDoc.object();
-        //TODO use when rooms will be introduced
-        // rootObject.value("chatId").toInt()
-        m_dialogsManager->CreateNewChat(reply->property("toUserId").toInt(), reply->property("toUserName").toString());
-        AddNewWidgetDialog(reply->property("toUserId").toInt(), reply->property("toUserName").toString(), true);
+        m_dialogsManager->CreateNewChat(reply->property("toUserId").toInt(), rootObject.value("chatId").toInt(), reply->property("toUserName").toString());
+        AddNewWidgetDialog(rootObject.value("chatId").toInt(), reply->property("toUserName").toString(), true);
     }
     else {
         qDebug() << "Failure" <<reply->errorString();

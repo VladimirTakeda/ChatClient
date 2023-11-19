@@ -1,5 +1,7 @@
 #include "websocketclient.h"
 
+#include "../utils.h"
+
 #include <QJsonDocument>
 #include <QJsonObject>
 
@@ -48,9 +50,9 @@ void WebSocketClient::OnTextMessageRecieved(QString message){
     Message msg;
     msg.text = rootObject.value("content").toString();
     msg.userFrom = rootObject.value("user_from_id").toInt();
-    msg.userTo = rootObject.value("user_to_id").toInt();
-    msg.userNameFrom = rootObject.value("user_name_from").toString();
-    msg.isMyMessage = rootObject.value("is_my_message").toBool();
+    msg.chatTo = rootObject.value("chat_to_id").toInt();
+    msg.chatName = rootObject.value("chat_name").toString();
+    msg.isMyMessage = (msg.userFrom == getCurrUserId());
 
     msg.time = QDateTime::fromString(rootObject.value("time").toString(), Qt::ISODate).toLocalTime();
 
