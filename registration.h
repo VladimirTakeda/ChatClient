@@ -21,7 +21,7 @@ public:
 
 private:
     void SetChatWindow();
-    void SaveUserInfo(int userId, const QString& userName);
+    void SaveUserInfo(int userId, const QString& deviceId, const QString& userName);
 
 private slots:
     void Register();

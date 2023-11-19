@@ -28,6 +28,12 @@ int getCurrUserId(){
     return settings.value("userId").toInt();
 }
 
+QString getCurrDeviceId(){
+    QSettings settings(QApplication::applicationDirPath() + "/settings.ini", QSettings::IniFormat);
+    qDebug() << settings.fileName();
+    return settings.value("deviceId").toString();
+}
+
 QString getCurrUserName(){
     QSettings settings(QApplication::applicationDirPath() + "/settings.ini", QSettings::IniFormat);
     qDebug() << settings.fileName();
@@ -102,8 +108,7 @@ void ChatWidget::AddMessageToWidgetDialog(int userId, const QString &lastMessage
 }
 
 void ChatWidget::SetUpWSConnection(){
-
-    QString url = QString("ws://localhost:8080/create?user_id=%1").arg(getCurrUserId());
+    QString url = QString("ws://localhost:8080/create?user_id=%1&device_id=%2").arg(getCurrUserId()).arg(getCurrDeviceId());
     m_client.reset(new WebSocket::WebSocketClient(QUrl(url), std::bind(&ChatWidget::GetNewMessage, this, std::placeholders::_1)));
 }
 
