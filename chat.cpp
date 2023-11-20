@@ -143,7 +143,7 @@ void ChatWidget::on_lineEdit_2_returnPressed()
     obj["content"] = ui->lineEdit_2->text();
     obj["user_from_id"] = getCurrUserId();
     obj["chat_to_id"] = ui->listWidget->currentItem()->data(Qt::UserRole).toInt();
-    obj["user_name_from"] = getCurrUserName();
+    obj["chat_name"] = getCurrUserName();
 
     QJsonDocument doc(obj);
 

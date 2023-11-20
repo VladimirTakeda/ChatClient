@@ -62,7 +62,7 @@ void DialogsManager::SaveDialogs() const
         QDataStream out(&outFile);
 
         out << static_cast<uint64_t>(m_users.size());
-        for (auto elem : m_users)
+        for (int32_t elem : m_users)
             out << elem;
 
         out << static_cast<uint64_t>(m_IdToDialog.size());
@@ -120,9 +120,9 @@ void DialogsManager::LoadDialogs()
         QDataStream in(&inFile);
 
         uint64_t usersCount = 0;
-        in << usersCount;
+        in >> usersCount;
         for (uint64_t i = 0; i < usersCount; i++){
-            int elem;
+            int32_t elem;
             in >> elem;
             m_users.insert(elem);
         }
