@@ -234,9 +234,6 @@ void ChatWidget::SetNewDialog(QListWidgetItem * clickedItem)
     if (!m_dialogsManager->IsDialogWithUserExist(clickedItem->data(Qt::UserRole).toInt())){
         SendCreateDialogReq(getCurrUserId(), clickedItem->data(Qt::UserRole).toInt(), itemWidget->GetName());
     }
-    else{
-        UpdateTextBrowser(clickedItem->data(Qt::UserRole).toInt());
-    }
 }
 
 void ChatWidget::SendCreateDialogReq(int fromUser, int toUser, const QString& toUserName){
@@ -268,6 +265,7 @@ void ChatWidget::CreateChatReply(QNetworkReply *reply){
         QJsonObject rootObject = itemDoc.object();
         m_dialogsManager->CreateNewChat(reply->property("toUserId").toInt(), rootObject.value("chatId").toInt(), reply->property("toUserName").toString());
         AddNewWidgetDialog(rootObject.value("chatId").toInt(), reply->property("toUserName").toString(), true);
+        UpdateTextBrowser(rootObject.value("chatId").toInt());
     }
     else {
         qDebug() << "Failure" <<reply->errorString();
