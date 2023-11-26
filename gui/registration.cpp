@@ -1,6 +1,6 @@
 #include "registration.h"
 #include "mainwindow.h"
-#include "network/httpclient.h"
+#include <network/httpclient.h>
 
 #include <QNetworkAccessManager>
 #include <QJsonObject>

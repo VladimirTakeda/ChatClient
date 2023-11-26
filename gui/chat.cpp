@@ -1,12 +1,12 @@
 #include "chat.h"
 
 #include "user_item.h"
-#include "dialogsmanager.h"
+#include <dialogsmanager.h>
 
-#include "network/websocketclient.h"
-#include "network/httpclient.h"
+#include <network/websocketclient.h>
+#include <network/httpclient.h>
 
-#include "utils.h"
+#include <utils.h>
 
 #include <QNetworkAccessManager>
 #include <QJsonObject>

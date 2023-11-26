@@ -2,7 +2,7 @@
 #include "chat.h"
 #include "unregister.h"
 #include "registration.h"
-#include "network/httpclient.h"
+#include <network/httpclient.h>
 
 #include <QSettings>
 #include <QStackedLayout>

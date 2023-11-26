@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.9)
 
 project(ChatClient VERSION 0.1 LANGUAGES CXX)
 
@@ -6,16 +6,18 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets WebSockets)
 
+set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/gui )
+
 set(PROJECT_SOURCES
         main.cpp
-        mainwindow.cpp
-        mainwindow.h
+        gui/mainwindow.cpp
+        gui/mainwindow.h
 
 )
 
@@ -27,15 +29,15 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
 
         chatbackground.qrc
         chat.ui
-        chat.h chat.cpp
+        gui/chat.h gui/chat.cpp
         unregister.ui
-        unregister.h unregister.cpp
-        registration.h registration.cpp
+        gui/unregister.h gui/unregister.cpp
+        gui/registration.h gui/registration.cpp
         registration.ui
         network/websocketclient.cpp network/websocketclient.h
         network/httpclient.h network/httpclient.cpp
         dialog_item.ui
-        user_item.h user_item.cpp
+        gui/user_item.h gui/user_item.cpp
         dialog.h dialog.cpp
         dialogsmanager.h dialogsmanager.cpp
         utils.h utils.cpp
@@ -57,6 +59,10 @@ else()
         )
     endif()
 endif()
+
+target_include_directories(ChatClient PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
 
 target_link_libraries(ChatClient PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt6::WebSockets)
 
