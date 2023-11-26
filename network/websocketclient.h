@@ -2,17 +2,26 @@
 #define WEBSOCKETCLIENT_H
 
 
-//Qt includes
-//WebSocket
 #include <QtWebSockets/QWebSocketServer>
 #include <QtWebSockets/QWebSocket>
-//Util
+
 #include <QObject>
 #include <QDebug>
 
+namespace WebSocket{
+
+struct Message{
+    QString text;
+    QString chatName;
+    int userFrom;
+    int chatTo;
+    bool isMyMessage;
+    QDateTime time;
+};
+
 class WebSocketClient : public QObject{
 public:
-    WebSocketClient(const QUrl &url, QObject* parent = nullptr);
+    WebSocketClient(const QUrl &url, std::function<void(Message)> callBack, QObject* parent = nullptr);
     void SendTextMessage(const QString& msg);
 private slots:
     void OnNewConnection();
@@ -20,6 +29,9 @@ private slots:
     void OnTextMessageRecieved(QString message);
     void handle_ssl_errors(const QList<QSslError> &errors);
     QWebSocket m_socket;
+    std::function<void(Message)> m_callBack;
 };
+
+}
 
 #endif // WEBSOCKETCLIENT_H

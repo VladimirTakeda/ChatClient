@@ -4,33 +4,67 @@
 #include <QWidget>
 #include <memory>
 
-class WebSocketClient;
-
 QT_BEGIN_NAMESPACE
 namespace Ui { class ChatUI; }
 QT_END_NAMESPACE
 
+struct UserInfo
+{
+    UserInfo(int, QString&&);
+    QString userLogin;
+    int userId;
+};
+
 class QNetworkAccessManager;
 class QNetworkReply;
+class QListWidgetItem;
+class HttpClient;
+
+namespace WebSocket{
+class Message;
+class WebSocketClient;
+}
+
+class DialogsManager;
 
 class ChatWidget : public QWidget
 {
     Q_OBJECT
 public:
-    ChatWidget(QWidget *parent = nullptr);
+    ChatWidget(std::shared_ptr<HttpClient>, QWidget *parent = nullptr);
     void SetUpWSConnection();
+    void LoadDialogs();
+    void SaveDialogs() const;
     ~ChatWidget();
+
+private:
+    void AddNewWidgetDialog(int chatId, const QString& name, bool needSetItem);
+    void UpdateWidgetDialog(int chatId, const QString& lastMessage, uint64_t unreadCount, const QDateTime& localMsgTime);
+    void AddMessageToWidgetDialog(int userId, const QString &lastMessage, bool NeedIncrement, const QDateTime& localMsgTime);
+    void SetExistingDialogs();
+    void SetSearchResults(const std::vector<UserInfo>& results);
+    void SendCreateDialogReq(int fromUser, int toUser, const QString& toUserName);
+    void GetNewMessage(WebSocket::Message mgs);
+    void UpdateTextBrowser(int selectedContactId);
 
 private slots:
     void on_lineEdit_2_returnPressed();
     void LookingForPeople(const QString& prefix);
-    void ReplyFinished(QNetworkReply *rep);
-
+    void LookingForPeopleReply(QNetworkReply *rep);
+    void CreateChatReply(QNetworkReply *rep);
+    void SetDialog(QListWidgetItem *);
+    void SetNewDialog(QListWidgetItem *);
 
 private:
     Ui::ChatUI *ui;
-    QNetworkAccessManager* m_networkMgr;
-    std::unique_ptr<WebSocketClient> m_client;
+
+    std::unordered_map<int, QListWidgetItem*> m_idToDialogWidget;
+
+    std::unique_ptr<WebSocket::WebSocketClient> m_client;
+    std::shared_ptr<HttpClient> m_httpClient;
+
+    std::unordered_map<QString, int> m_DialogsToId;
+    std::unique_ptr<DialogsManager> m_dialogsManager;
 };
 
 #endif // CHATWIDGET_H

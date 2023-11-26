@@ -12,6 +12,7 @@ class ChatWidget;
 class UnregisterWidget;
 class RegistrationWidget;
 class QStackedLayout;
+class HttpClient;
 
 class MainWindow : public QMainWindow, std::enable_shared_from_this<MainWindow>
 {
@@ -24,7 +25,14 @@ public:
     void SetChatWidget();
     ~MainWindow();
 
+protected:
+    void closeEvent(QCloseEvent* event) override;
+
 private:
+    void SaveMetaData();
+
+private:
+    std::shared_ptr<HttpClient> m_httpClient;
     ChatWidget* m_chatWidget;
     UnregisterWidget* m_unregisterWidget;
     RegistrationWidget* m_registrationWidget;

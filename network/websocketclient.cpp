@@ -1,8 +1,16 @@
 #include "websocketclient.h"
 
-WebSocketClient::WebSocketClient(const QUrl &url, QObject* parent):
+#include "../utils.h"
+
+#include <QJsonDocument>
+#include <QJsonObject>
+
+namespace WebSocket{
+
+WebSocketClient::WebSocketClient(const QUrl &url, std::function<void(Message)> callBack, QObject* parent):
     QObject(parent),
-    m_socket()
+    m_socket(),
+    m_callBack(callBack)
 {
     connect(&m_socket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::errorOccurred),
             [=](QAbstractSocket::SocketError error){
@@ -21,13 +29,13 @@ WebSocketClient::WebSocketClient(const QUrl &url, QObject* parent):
 }
 
 void WebSocketClient::SendTextMessage(const QString& msg){
-    m_socket.sendTextMessage(msg);
+    qDebug() << msg;
+    qDebug() << "Sended bytes : " << m_socket.sendTextMessage(msg);
 }
 
 void WebSocketClient::OnNewConnection(){
     qDebug() << "New Connection";
 
-    m_socket.sendTextMessage(QStringLiteral("Hello, world!"));
     connect(&m_socket, &QWebSocket::textMessageReceived, this, &WebSocketClient::OnTextMessageRecieved);
 }
 
@@ -36,10 +44,24 @@ void WebSocketClient::OnCloseConnection(){
 }
 
 void WebSocketClient::OnTextMessageRecieved(QString message){
+    qDebug() << message;
+    QJsonDocument itemDoc = QJsonDocument::fromJson(message.toUtf8());
+    QJsonObject rootObject = itemDoc.object();
+    Message msg;
+    msg.text = rootObject.value("content").toString();
+    msg.userFrom = rootObject.value("user_from_id").toInt();
+    msg.chatTo = rootObject.value("chat_to_id").toInt();
+    msg.chatName = rootObject.value("chat_name").toString();
+    msg.isMyMessage = (msg.userFrom == getCurrUserId());
+
+    msg.time = QDateTime::fromString(rootObject.value("time").toString(), Qt::ISODate).toLocalTime();
+
+    m_callBack(msg);
 }
 
 void WebSocketClient::handle_ssl_errors(const QList<QSslError> &errors){
     Q_UNUSED(errors);
     qDebug() << "SSL";
     m_socket.ignoreSslErrors();
+}
 }
