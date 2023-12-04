@@ -19,6 +19,7 @@ class QNetworkAccessManager;
 class QNetworkReply;
 class QListWidgetItem;
 class HttpClient;
+class PopUp;
 
 namespace WebSocket{
 class Message;
@@ -44,7 +45,7 @@ private:
     void SetExistingDialogs();
     void SetSearchResults(const std::vector<UserInfo>& results);
     void SendCreateDialogReq(int fromUser, int toUser, const QString& toUserName);
-    void GetNewMessage(WebSocket::Message mgs);
+    void GotNewMessage(WebSocket::Message mgs);
     void UpdateTextBrowser(int selectedContactId);
 
 private slots:
@@ -54,6 +55,7 @@ private slots:
     void CreateChatReply(QNetworkReply *rep);
     void SetDialog(QListWidgetItem *);
     void SetNewDialog(QListWidgetItem *);
+    void OnGotNotification(const QString& name, const QString& text, int64_t unreadCount, const QDateTime& time);
 
 private:
     Ui::ChatUI *ui;
@@ -65,6 +67,8 @@ private:
 
     std::unordered_map<QString, int> m_DialogsToId;
     std::unique_ptr<DialogsManager> m_dialogsManager;
+
+    PopUp *m_popUp;
 };
 
 #endif // CHATWIDGET_H

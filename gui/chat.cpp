@@ -2,6 +2,7 @@
 
 #include "user_item.h"
 #include <dialogsmanager.h>
+#include "popup.h"
 
 #include <network/websocketclient.h>
 #include <network/httpclient.h>
@@ -47,6 +48,7 @@ ChatWidget::ChatWidget(std::shared_ptr<HttpClient> httpClient, QWidget *parent)
     , ui(new Ui::ChatUI)
     , m_httpClient(std::move(httpClient))
     , m_dialogsManager(new DialogsManager())
+    , m_popUp (new PopUp())
 {
     ui->setupUi(this);
     connect(ui->lineEdit, &QLineEdit::textEdited, this, &ChatWidget::LookingForPeople);
@@ -94,7 +96,7 @@ void ChatWidget::AddMessageToWidgetDialog(int userId, const QString &lastMessage
 
 void ChatWidget::SetUpWSConnection(){
     QString url = QString("ws://localhost:8080/create?user_id=%1&device_id=%2").arg(getCurrUserId()).arg(getCurrDeviceId());
-    m_client.reset(new WebSocket::WebSocketClient(QUrl(url), std::bind(&ChatWidget::GetNewMessage, this, std::placeholders::_1)));
+    m_client.reset(new WebSocket::WebSocketClient(QUrl(url), std::bind(&ChatWidget::GotNewMessage, this, std::placeholders::_1)));
 }
 
 void ChatWidget::LoadDialogs()
@@ -111,9 +113,8 @@ void ChatWidget::SaveDialogs() const
     m_dialogsManager->SaveToMemory();
 }
 
-void ChatWidget::GetNewMessage(WebSocket::Message msg)
+void ChatWidget::GotNewMessage(WebSocket::Message msg)
 {
-    // MayCreateNewDialog
     if (!m_dialogsManager->IsChatExist(msg.chatTo)){
         m_dialogsManager->CreateNewChat(msg.userFrom, msg.chatTo, msg.chatName);
         AddNewWidgetDialog(msg.chatTo, msg.chatName, false);
@@ -128,6 +129,8 @@ void ChatWidget::GetNewMessage(WebSocket::Message msg)
         UpdateTextBrowser(msg.chatTo);
 
     AddMessageToWidgetDialog(msg.chatTo, msg.text, !IsSelectedDialog, msg.time);
+
+    OnGotNotification(msg.chatName, msg.text, m_dialogsManager->m_IdToDialog.at(msg.chatTo).m_unreadCount, msg.time);
 }
 
 void ChatWidget::UpdateTextBrowser(int selectedContactId)
@@ -270,4 +273,10 @@ void ChatWidget::CreateChatReply(QNetworkReply *reply){
     else {
         qDebug() << "Failure" <<reply->errorString();
     }
+}
+
+void ChatWidget::OnGotNotification(const QString& name, const QString& text, int64_t unreadCount, const QDateTime& time)
+{
+    m_popUp->setPopupText(name, text, unreadCount, time);
+    m_popUp->show();
 }
